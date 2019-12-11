@@ -2,68 +2,35 @@ package com.koducation.androidcourse101.data.remote
 
 import com.koducation.androidcourse101.data.Resource
 import com.koducation.androidcourse101.data.remote.model.Radio
-import io.reactivex.Observable
-import io.reactivex.schedulers.Schedulers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
 
 class RadioDataSource @Inject constructor(val radioServiceProvider: RadioServiceProvider) {
 
-    fun fetchPopularRadios(): Observable<Resource<List<Radio>>> {
-        return Observable.create { emitter ->
+    fun fetchPopularRadios(): Flow<Resource<List<Radio>>> {
+        return flow {
+            emit(Resource.loading())
 
-            emitter.onNext(Resource.loading())
-
-            radioServiceProvider
-                .radioService
-                .popularRadios()
-                .subscribeOn(Schedulers.io())
-                .subscribe(
-                    {
-                        emitter.onNext(
-                            Resource.success(
-                                it
-                            )
-                        )
-                        emitter.onComplete()
-                    },
-                    {
-                        emitter.onNext(
-                            Resource.error(
-                                it.message ?: "Error"
-                            )
-                        )
-                        emitter.onComplete()
-                    }
-                )
+            try {
+                val popularRadios = radioServiceProvider.radioService.popularRadios()
+                emit(Resource.success(popularRadios))
+            } catch (exception: Exception) {
+                emit(Resource.error(exception.message ?: "Error"))
+            }
         }
     }
 
-    fun fetchLocationRadios(): Observable<Resource<List<Radio>>> {
-        return Observable.create { emitter ->
+    fun fetchLocationRadios(): Flow<Resource<List<Radio>>> {
+        return flow {
+            emit(Resource.loading())
 
-            emitter.onNext(Resource.loading())
-
-            radioServiceProvider
-                .radioService
-                .locationRadios()
-                .subscribeOn(Schedulers.io())
-                .subscribe(
-                    {
-                        emitter.onNext(
-                            Resource.success(
-                                it
-                            )
-                        )
-                        emitter.onComplete()
-                    },
-                    {
-                        emitter.onNext(
-                            Resource.error(
-                                it.message ?: "Error"
-                            )
-                        )
-                        emitter.onComplete()
-                    })
+            try {
+                val locationRadios = radioServiceProvider.radioService.locationRadios()
+                emit(Resource.success(locationRadios))
+            } catch (exception: Exception) {
+                emit(Resource.error(exception.message ?: "Error"))
+            }
         }
     }
 }
